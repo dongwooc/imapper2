@@ -1,29 +1,33 @@
 """
-    Script for quickly visualizing 3D brightness temperature cubes.  Requires PyQt4(?).
+    cube_viz.py: a script for quickly visualizing 3D brightness temperature cubes.
     
-    Author: Dongwoo Chung
+    author: Dongwoo Chung [dongwooc]
+    dependencies: numpy, pyqtgraph (which requires PySide or PyQt4), eventually VisPy
 """
 
 import argparse
 import numpy as np
 # at some point this stuff should be ported over to VisPy
 # however, VisPy doesn't actually handle transparency for overlapping volumes yet
-#     so when they can actually do that, we'll start using VisPy
 #     (see wiki page titled 'Tech. Transparency')
-_use_vispy = False
+#     so when they can actually do that, we'll start using VisPy full-time
+#         in the meantime, there's an optional flag for using vispy, but it's only good for rendering one cube at a time
+
+parser = argparse.ArgumentParser()
+parser.add_argument('cubefiles',nargs='+') # .npz files to parse
+parser.add_argument('--tmax',nargs='?',type=float,default=10.) # temperature cutoff
+parser.add_argument('--use-vispy',action='store_true')
+
+args = parser.parse_args()
+_use_vispy = args.use_vispy
 
 if _use_vispy:
+    print('using VisPy instead of pyqtgraph')
     import vispy.scene as vpsc
     from vispy.color import BaseColormap
 else:
     from pyqtgraph.Qt import QtCore, QtGui
     import pyqtgraph.opengl as gl
-
-parser = argparse.ArgumentParser()
-parser.add_argument('cubefiles',nargs='+') # .npz files to parse
-parser.add_argument('--tmax',nargs='?',type=float,default=10.) # temperature cutoff
-
-args = parser.parse_args()
 
 if _use_vispy:
     class magentaCmap(BaseColormap):
