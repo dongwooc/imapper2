@@ -19,7 +19,7 @@ import astropy.units as au
 from astropy import constants as const
 
 # Other imports from this folder
-import halolist as hlist
+from . import halolist as hlist
 
 #############
 # COSMOLOGY #
