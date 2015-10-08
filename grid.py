@@ -4,7 +4,7 @@
 
 import numpy as np
 import logging
-import functions as fn
+from . import functions as fn
 
 class IMGrid(object):
     """Object storing intensity mapping grids.

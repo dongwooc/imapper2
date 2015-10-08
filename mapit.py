@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Standard modules
 import os.path
@@ -9,12 +9,8 @@ import logging
 import importlib
 
 # Modules within this package
-import functions as fn
-import parameters # Changed from "import parameters"
-import imapping
-import kspace 
-import errorbars
-import grid
+from imapper2 import functions as fn
+from imapper2 import *
 
 def main():
     # Set up logging

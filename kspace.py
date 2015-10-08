@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 from numpy import fft as ft
-import functions as fn
+from . import functions as fn
 from scipy import integrate
 from scipy import interpolate
 

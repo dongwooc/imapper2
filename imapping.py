@@ -1,8 +1,8 @@
 import logging
 import numpy as np
 
-import functions
-import grid
+from . import functions
+from . import grid
 
 """
 Module for turning halo luminosities into a gridded intensity map.
