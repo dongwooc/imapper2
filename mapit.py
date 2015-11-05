@@ -19,10 +19,8 @@ def main():
             format='%(asctime)s  %(message)s', 
             datefmt='%Y-%d-%m %I:%M:%S %p')
     
-    # Get parameters from the provided parameter file
-    param_file_path = sys.argv[1]
-    params = parameters.get_params(param_file_path)
-
+    # We get parameters from the provided parameter file, by default
+    params = parameters.get_params(sys.argv[1])
     # From parameter file, calculate intensity map + other outputs
     t0 = time.time()
 
@@ -108,7 +106,7 @@ def get_lum(halos, params):
     model_name = params['model']['name']
     model_parameters = params['model']['parameters']
 
-    model = importlib.import_module('models.{:s}'.format(model_name)) # `model` is a custom module that defines a function "line_luminosity"
+    model = importlib.import_module('imapper2.models.{:s}'.format(model_name)) # `model` is a custom module that defines a function "line_luminosity"
 
     lum = model.line_luminosity(halos, **model_parameters)
 

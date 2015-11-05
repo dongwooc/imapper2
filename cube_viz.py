@@ -3,6 +3,7 @@
     
     author: Dongwoo Chung [dongwooc]
     dependencies: numpy, pyqtgraph (which requires PySide or PyQt4), eventually VisPy
+    TODO: rebin extents to have consistent scale when overplotting
 """
 
 import argparse
@@ -33,19 +34,19 @@ if _use_vispy:
     class magentaCmap(BaseColormap):
         glsl_map = """
         vec4 magenta_cmap(float t) {
-            return vec4(t, 0, t, t/4.2);
+            return vec4(t, 0, t, t);
         }
         """
     class cyanCmap(BaseColormap):
         glsl_map = """
         vec4 cyan_cmap(float t) {
-            return vec4(0, t, t, t/4.2);
+            return vec4(0, t, t, t);
         }
         """
     class yellowCmap(BaseColormap):
         glsl_map = """
         vec4 yellow_cmap(float t) {
-            return vec4(t, t, 0, t/4.2);
+            return vec4(t, t, 0, t);
         }
         """
     colours = (magentaCmap(),cyanCmap(),yellowCmap())
@@ -69,7 +70,7 @@ for filename in args.cubefiles:
         t = np.rollaxis(t,-1)
     t_norm = np.clip(t,0,t_max)/t_max
     if _use_vispy:
-        viz = vpsc.visuals.Volume(t_norm,parent=v.scene,method='additive')
+        viz = vpsc.visuals.Volume(t_norm,parent=v.scene,method='mip')
         viz.cmap = colours[colour_idx]
     else:
         t_gl = np.empty(t.shape+(4,),dtype=np.ubyte)
@@ -89,6 +90,7 @@ for filename in args.cubefiles:
         t_gl[:,-1,-1] = [255,0,0,255]
         t_gl[-1,:,-1] = [0,255,0,255]
         t_gl[-1,-1,:] = [0,0,255,255]
+        print('cube shape: ',t_gl.shape[:-1])
         
         v = gl.GLVolumeItem(t_gl,smooth=True,glOptions='additive')
         v.translate(-len(z)//2,-len(x)//2,-len(y)//2)
