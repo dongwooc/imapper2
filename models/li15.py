@@ -6,6 +6,18 @@ import os
 import numpy as np
 import scipy.interpolate
 
+def add_log_normal_scatter(data,dex):
+    """Return array x, randomly scattered by a log-normal distribution with sigma=dexscatter. [via @tonyyli]
+
+    Note: scatter maintains mean in linear space (not log space).
+    """
+    # Calculate random scalings
+    sigma       = dex * 2.302585         # Stdev in log space (DIFFERENT from stdev in linear space), note: ln(10)=2.302585
+    mu          = -0.5*sigma**2
+    randscaling = np.random.lognormal(mu, sigma, data.shape)
+    xscattered  = np.where(data > 0, data*randscaling, data)
+    return xscattered
+
 def line_luminosity(halos, sigma_sfr=0.3, delta_mf=1.0, alpha=1.37, beta=-1.74, sigma_lco=0.3, min_mass=1e10):
     """
     Parameters
@@ -39,6 +51,7 @@ def line_luminosity(halos, sigma_sfr=0.3, delta_mf=1.0, alpha=1.37, beta=-1.74, 
     # Get interpolated SFR value(s)
     rbv         = scipy.interpolate.RectBivariateSpline(dat_logm, dat_logzp1, dat_sfr, kx=1, ky=1)
     sfr  = rbv.ev(np.log10(hm), np.log10(hz+1.))
+    sfr = add_log_normal_scatter(sfr,sigma_sfr)
 
     halos.sfr = sfr
     
@@ -47,6 +60,7 @@ def line_luminosity(halos, sigma_sfr=0.3, delta_mf=1.0, alpha=1.37, beta=-1.74, 
 
     alphainv = 1./alpha
     lcop = lir**alphainv * 10**(-beta * alphainv)
+    lcop = add_log_normal_scatter(lcop,sigma_lco)
     
     lco = np.where(
             hm >= min_mass, 
