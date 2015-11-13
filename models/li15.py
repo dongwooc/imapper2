@@ -18,7 +18,7 @@ def add_log_normal_scatter(data,dex):
     xscattered  = np.where(data > 0, data*randscaling, data)
     return xscattered
 
-def line_luminosity(halos, sigma_sfr=0.3, delta_mf=1.0, alpha=1.37, beta=-1.74, sigma_lco=0.3, min_mass=1e10):
+def line_luminosity(halos, line_freq, sigma_sfr=0.3, delta_mf=1.0, alpha=1.37, beta=-1.74, sigma_lco=0.3, min_mass=1e10):
     """
     Parameters
     halos : HaloList object
@@ -30,8 +30,6 @@ def line_luminosity(halos, sigma_sfr=0.3, delta_mf=1.0, alpha=1.37, beta=-1.74, 
     lco : float array
         halo CO luminosities [Lsun]
     """
-    line_freq   = 115.27
-    
     hm          = halos.m
     hz          = halos.zcos
 

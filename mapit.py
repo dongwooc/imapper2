@@ -105,10 +105,11 @@ def get_lum(halos, params):
 
     model_name = params['model']['name']
     model_parameters = params['model']['parameters']
+    nurest  = params['line_nu0'] # Rest-frame line frequency
 
     model = importlib.import_module('imapper2.models.{:s}'.format(model_name)) # `model` is a custom module that defines a function "line_luminosity"
 
-    lum = model.line_luminosity(halos, **model_parameters)
+    lum = model.line_luminosity(halos, nurest, **model_parameters)
 
     return lum
 
