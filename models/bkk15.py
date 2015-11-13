@@ -8,7 +8,7 @@ import os
 import numpy as np
 import scipy.interpolate
 
-def line_luminosity(halos, line_freq, A=2e-6, b=1., min_mass=1e9):
+def line_luminosity(halos, line_freq, A=2e-6, b=1., fduty=0.1, min_mass=1e9):
     """
     Parameters
     halos : HaloList object
@@ -25,8 +25,7 @@ def line_luminosity(halos, line_freq, A=2e-6, b=1., min_mass=1e9):
 
     lco = np.where(
             hm >= min_mass, 
-            A*hm**b,
+            A*fduty*hm**b,
             0. ) # Set all halos below minimum halo mass to have 0 luminosity
 
     return lco
-    # there's also an f_duty technically, but I think that gets absorbed into A even here
