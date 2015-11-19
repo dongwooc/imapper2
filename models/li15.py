@@ -11,6 +11,8 @@ def add_log_normal_scatter(data,dex):
 
     Note: scatter maintains mean in linear space (not log space).
     """
+    if (dex<=0):
+        return data
     # Calculate random scalings
     sigma       = dex * 2.302585         # Stdev in log space (DIFFERENT from stdev in linear space), note: ln(10)=2.302585
     mu          = -0.5*sigma**2
