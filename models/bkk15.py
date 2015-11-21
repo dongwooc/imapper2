@@ -10,7 +10,7 @@ import scipy.interpolate as interp
 from astropy.cosmology import WMAP9
 import astropy.units
 
-def line_luminosity(halos, line_freq, A=2e-6, b=1., min_mass=1e9, cosmo=WMAP9, zgrid_npts=42):
+def line_luminosity(halos, line_freq, A=2e-6, b=1., min_mass=1e10, cosmo=WMAP9, h_fduty=None):
     """
     Parameters
     halos : HaloList object
@@ -25,18 +25,21 @@ def line_luminosity(halos, line_freq, A=2e-6, b=1., min_mass=1e9, cosmo=WMAP9, z
     hm          = halos.m
     hz          = halos.zcos
     
-    # lazy fduty calculation
-    Omega_m,Omega_k,Omega_Lambda = cosmo.Om0,cosmo.Ok0,cosmo.Ode0
-    Omega_rad = 1-Omega_m-Omega_k-Omega_Lambda
-    lookback_integrand = lambda z:(Omega_rad*(1+z)**4+Omega_m*(1+z)**3+Omega_k*(1+z)**2+Omega_Lambda)**(-0.5)/(1+z)
-    age_func = np.vectorize(lambda z:spint.quad(lookback_integrand,z,np.inf)[0])
-    zgrid = np.linspace(min(hz),max(hz),zgrid_npts);
-    age_func_interp = interp.InterpolatedUnivariateSpline(zgrid,age_func(zgrid))
-    h_age = cosmo._hubble_time.to(astropy.units.Gyr).value*age_func_interp(hz)
-    fduty       = 0.1/h_age
+    # you'd want to fix h_fduty to keep the same halos across multiple lines
+    if (np.any(h_fduty)==None):
+        # lazy fduty calculation
+        Omega_m,Omega_k,Omega_Lambda = cosmo.Om0,cosmo.Ok0,cosmo.Ode0
+        Omega_rad = 1-Omega_m-Omega_k-Omega_Lambda
+        lookback_integrand = lambda z:(Omega_rad*(1+z)**4+Omega_m*(1+z)**3+Omega_k*(1+z)**2+Omega_Lambda)**(-0.5)/(1+z)
+        # take age at mean redshift
+        age_zmean = spint.quad(lookback_integrand,np.mean(hz),np.inf)[0]
+        h_age = cosmo._hubble_time.to(astropy.units.Gyr).value*age_zmean
+        fduty       = 0.1/h_age
+        h_fduty = (np.random.random(len(hm))<fduty)
 
     lco = np.where(
-            hm >= min_mass, 
-            A*fduty*hm**b,
+            (hm >= min_mass)*h_fduty,
+            A*hm**b,
             0. ) # Set all halos below minimum halo mass to have 0 luminosity
+    # also set only fduty of all halos to have luminosity
     return lco
