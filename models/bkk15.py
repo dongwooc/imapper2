@@ -10,7 +10,7 @@ import scipy.interpolate as interp
 from astropy.cosmology import WMAP9
 import astropy.units
 
-def line_luminosity(halos, line_freq, A=2e-6, b=1., min_mass=1e10, cosmo=WMAP9, h_fduty=None):
+def line_luminosity(halos, line_freq, A=2e-6, b=1., min_mass=1e10, cosmo=WMAP9, h_fduty=None, mean_relation=False):
     """
     Parameters
     halos : HaloList object
@@ -35,11 +35,14 @@ def line_luminosity(halos, line_freq, A=2e-6, b=1., min_mass=1e10, cosmo=WMAP9, 
         age_zmean = spint.quad(lookback_integrand,np.mean(hz),np.inf)[0]
         h_age = cosmo._hubble_time.to(astropy.units.Gyr).value*age_zmean
         fduty       = 0.1/h_age
-        h_fduty = (np.random.random(len(hm))<fduty)
+        if (mean_relation):
+            h_fduty = 1.
+        else:
+            h_fduty = (np.random.random(len(hm))<fduty)
 
     lco = np.where(
             (hm >= min_mass)*h_fduty,
-            A*hm**b,
+            A*(fduty*mean_relation+1.*(not mean_relation))*hm**b,
             0. ) # Set all halos below minimum halo mass to have 0 luminosity
     # also set only fduty of all halos to have luminosity
     return lco
