@@ -24,6 +24,7 @@ class HaloList(object):
             pid = data['pid']
             zcos= data['zcos']
             zlos= data['zlos']
+            vmax= data['vmax']
 
         # For each property, assign values to appropriate field. Note: in order
         # to prevent additional attributes from being created dynamically, we
@@ -37,6 +38,7 @@ class HaloList(object):
         object.__setattr__(self, 'pid',  pid)
         object.__setattr__(self, 'zcos', zcos)
         object.__setattr__(self, 'zlos', zlos)
+        object.__setattr__(self, 'vmax', vmax)
 
         # Derived properties, to be calculated later
         object.__setattr__(self, 'sfr',  None)  # Star formation rate

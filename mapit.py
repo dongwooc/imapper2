@@ -137,7 +137,10 @@ def get_tcube(halos, imgrid, params):
     hbinidx = halos.binidx      # Halo bin indices
 
     ### We have everything we need. Now bin the halos and get the luminosity cube, then temperature cube...
-    lcube = imapping.lhalo_to_lcube(hxa, hya, hzf, hlum, obins, nurest, cosmo, hbinidx=hbinidx)
+    if params['doppler']:
+        lcube = imapping.lhalo_to_lcube(hxa, hya, hzf, hlum, obins, nurest, cosmo, hbinidx=hbinidx, doppler=True, hvmax=halos.vmax)
+    else:
+        lcube = imapping.lhalo_to_lcube(hxa, hya, hzf, hlum, obins, nurest, cosmo, hbinidx=hbinidx)
     tcube = imapping.lcube_to_tcube(lcube, obins, nurest, cosmo)
     return tcube
 

@@ -1,5 +1,6 @@
 import logging
 import numpy as np
+from scipy.ndimage import gaussian_filter1d
 
 from . import functions
 from . import grid
@@ -11,7 +12,7 @@ Module for turning halo luminosities into a gridded intensity map.
 2) Convert that luminosity cube to a temperature cube
 """
 
-def lhalo_to_lcube(hxa, hya, hzf, hlum, obins, nurest, cosmo, hbinidx=None, verbose=True):
+def lhalo_to_lcube(hxa, hya, hzf, hlum, obins, nurest, cosmo, hbinidx=None, doppler=False, hvmax=None, freqrefine=10, verbose=True):
     """
     [placeholder]
     """
@@ -35,7 +36,23 @@ def lhalo_to_lcube(hxa, hya, hzf, hlum, obins, nurest, cosmo, hbinidx=None, verb
     nbins = nxbins*nybins*nzbins
     try:
         # Try to calculate binned luminosity cube, assuming bin indices have been precalculated
-        lcube = np.bincount(hbinidx, weights=hlum, minlength=nbins)[:nbins].reshape(nxbins, nybins, nzbins)
+        if not doppler:
+            lcube = np.bincount(hbinidx, weights=hlum, minlength=nbins)[:nbins].reshape(nxbins, nybins, nzbins)
+        else:
+            lcube = np.zeros((nxbins,nybins,nzbins))
+            xidx, yidx, zidx = np.unravel_index(hbinidx,lcube.shape)
+            ze_fine = np.linspace(ze[0],ze[-1],freqrefine*(ze.size-1)+1)
+            zidx_fine = np.digitize(hzf,ze_fine)-1
+            nuobs = nurest/(1+hzf);
+            dnu_fine = abs(ze_fine[1]-ze_fine[0])
+            sigma_nu = 0.42466*nuobs*hvmax/299792.458 # km/s FWHM to GHz stdev
+            for i in range(zidx_fine.size):
+                if (nzbins*freqrefine<= zidx_fine[i]) or (hbinidx[i] == nbins):
+                    continue;
+                temp_pixel = np.zeros(nzbins*freqrefine);
+                temp_pixel[zidx_fine[i]] = hlum[i];
+                temp_pixel = gaussian_filter1d(temp_pixel,sigma_nu[i]/dnu_fine)
+                lcube[xidx[i],yidx[i],:]+= temp_pixel.reshape(nzbins,freqrefine).sum(1)
         # Note: `hbinidx` is a 1D index array of length (xe.size-1)*(ye.size-1)*(ze.size-1). `hbinidx[i]` is the index of the i-th halo in the data cube
     except ValueError:
         # If bin indices don't exist yet, calculate them, bin halos for the first time
@@ -49,7 +66,22 @@ def lhalo_to_lcube(hxa, hya, hzf, hlum, obins, nurest, cosmo, hbinidx=None, verb
         hbinidx[oobounds] = nbins
 
         # Calculate binned luminosity cube
-        lcube = np.bincount(hbinidx, weights=hlum, minlength=nbins)[:nbins].reshape(nxbins, nybins, nzbins)
+        if not doppler:
+            lcube = np.bincount(hbinidx, weights=hlum, minlength=nbins)[:nbins].reshape(nxbins, nybins, nzbins)
+        else:
+            lcube = np.zeros((nxbins,nybins,nzbins))
+            ze_fine = np.linspace(ze[0],ze[-1],freqrefine*(ze.size-1)+1)
+            zidx_fine = np.digitize(hzf,ze_fine)-1
+            nuobs = nurest/(1+hzf);
+            dnu_fine = abs(ze_fine[1]-ze_fine[0])
+            sigma_nu = 0.42466*nuobs*hvmax/299792.458 # km/s FWHM to GHz stdev
+            for i in range(zidx_fine.size):
+                if (nzbins*freqrefine<= zidx_fine[i]) or (hbinidx[i] == nbins):
+                    continue;
+                temp_pixel = np.zeros(nzbins*freqrefine);
+                temp_pixel[zidx_fine[i]] = hlum[i];
+                temp_pixel = gaussian_filter1d(temp_pixel,sigma_nu[i]/dnu_fine)
+                lcube[xidx[i],yidx[i],:]+= temp_pixel.reshape(nzbins,freqrefine).sum(1)
 
     return lcube
 
