@@ -1,0 +1,3 @@
+[submodule "viz/vispy-multivol"]
+	path = viz/vispy-multivol
+	url = https://github.com/astrofrog/vispy-multivol.git

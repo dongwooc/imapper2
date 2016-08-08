@@ -26,6 +26,7 @@ if _use_vispy:
     print('using VisPy instead of pyqtgraph')
     import vispy.scene as vpsc
     from vispy.color import BaseColormap
+    from multivol import MultiVolume
 else:
     from pyqtgraph.Qt import QtCore, QtGui
     import pyqtgraph.opengl as gl
@@ -60,6 +61,9 @@ else:
 colour_idx = -1;
 t_max = args.tmax;
 
+if _use_vispy:
+    volumes = [];
+
 for filename in args.cubefiles:
     colour_idx = (colour_idx + 1) % len(colours)
     print('plotting: ',filename) #,colours[colour_idx])
@@ -70,8 +74,7 @@ for filename in args.cubefiles:
         t = np.rollaxis(t,-1)
     t_norm = np.clip(t,0,t_max)/t_max
     if _use_vispy:
-        viz = vpsc.visuals.Volume(t_norm,parent=v.scene,method='mip')
-        viz.cmap = colours[colour_idx]
+        volumes.append((t_norm,(0,1),colours[colour_idx]))
     else:
         t_gl = np.empty(t.shape+(4,),dtype=np.ubyte)
         t_gl[...,0] = t_norm*colours[colour_idx][0]
@@ -98,6 +101,7 @@ for filename in args.cubefiles:
 
 if _use_vispy:
     fov = 60.
+    MultiVolume(volumes,parent=v.scene);
     v.camera = vpsc.cameras.TurntableCamera(parent=w.scene,fov=fov)
     w.app.run()
 else:
