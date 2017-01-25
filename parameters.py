@@ -94,6 +94,12 @@ def get_general_params(raw_params):
     except KeyError:
         params['angrefine'] = 10.
     
+    # Doppler broadening based on circular velocity
+    try:
+        params['doppler'] = is_true(raw_params, 'doppler')
+    except KeyError:
+        params['doppler'] = False
+    
     # Redshift-space distortions
     try:
         params['enable_rsd'] = is_true(raw_params, 'enable_rsd')
